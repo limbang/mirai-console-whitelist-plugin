@@ -16,13 +16,10 @@ repositories {
 }
 
 dependencies {
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.okio:okio:3.7.0")
-    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.11")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    compileOnly(files("debug-sandbox/plugins/mirai-console-mcsm-plugin-1.1.6.mirai2.jar"))
 
     testImplementation(kotlin("test"))
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.6.4")
-    testImplementation("com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.11")
 }

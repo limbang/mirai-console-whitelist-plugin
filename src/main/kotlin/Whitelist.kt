@@ -7,8 +7,11 @@
 
 package top.limbang.whitelist
 
+import kotlinx.coroutines.cancel
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
+import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.event.registerTo
 
 object Whitelist : KotlinPlugin (
     JvmPluginDescription(
@@ -18,9 +21,18 @@ object Whitelist : KotlinPlugin (
     ){
         author("Limbang")
         info("MC服务器白名单管理插件")
+        dependsOn("top.limbang.mcsm")
     }
 ){
     override fun onEnable() {
         WhitelistData.reload()
+        // 创建事件通道
+        val eventChannel = GlobalEventChannel.parentScope(this)
+
+        WhitelistListener.registerTo(eventChannel)
+    }
+
+    override fun onDisable() {
+        WhitelistListener.cancel()
     }
 }
