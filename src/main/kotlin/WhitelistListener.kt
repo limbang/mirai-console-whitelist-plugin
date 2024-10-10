@@ -13,6 +13,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
 import net.mamoe.mirai.console.permission.PermissionService.Companion.hasPermission
+import net.mamoe.mirai.contact.getMember
+import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.EventHandler
 import net.mamoe.mirai.event.SimpleListenerHost
 import net.mamoe.mirai.event.events.GroupMessageEvent
@@ -35,6 +37,27 @@ import java.util.UUID
 object WhitelistListener : SimpleListenerHost() {
 
     /**
+     * ### 处理群消息检查 QQ 绑定
+     *
+     */
+    @EventHandler
+    suspend fun GroupMessageEvent.queryRoleBindingQQ() {
+        if (toCommandSender().hasPermission(Whitelist.parentPermission).not()) return
+
+        val content = message.contentToString()
+        val match = """^查询角色\s(.*)""".toRegex().find(content) ?: return
+
+        val (username) = match.destructured
+        val userInfo = WhitelistData.bindingList.find { it.username == username } ?: run {
+            group.sendMessage("角色[$username]未绑定。")
+            return
+        }
+
+        val memberName = group.getMember(userInfo.qq)?.nameCardOrNick
+        group.sendMessage("角色[$username]的 QQ 绑定为：$memberName - ${userInfo.qq}")
+    }
+
+    /**
      * ### 处理群消息绑定角色
      *
      */
@@ -52,7 +75,8 @@ object WhitelistListener : SimpleListenerHost() {
         }
         // 判断是否绑定已经绑定的角色
         WhitelistData.bindingList.find { it.username == username }?.let {
-            group.sendMessage(At(sender.id) + "角色已被[" + At(it.qq) + "]绑定，请勿重复绑定。")
+            val memberName = group.getMember(it.qq)?.nameCardOrNick
+            group.sendMessage(At(sender.id) + "角色已被[$memberName - ${it.qq}]绑定，请勿重复绑定。")
             return
         }
 
