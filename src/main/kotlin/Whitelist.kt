@@ -21,6 +21,6 @@ object Whitelist : KotlinPlugin (
     }
 ){
     override fun onEnable() {
-
+        WhitelistData.reload()
     }
 }
