@@ -19,6 +19,7 @@ import net.mamoe.mirai.event.EventHandler
 import net.mamoe.mirai.event.SimpleListenerHost
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.data.At
+import net.mamoe.mirai.message.data.PlainText
 import top.limbang.mcsm.mirai.command.MCSMCompositeCommand.apiMap
 import top.limbang.mcsm.mirai.config.GroupInstance
 import top.limbang.mcsm.mirai.config.MCSMData
@@ -53,8 +54,10 @@ object WhitelistListener : SimpleListenerHost() {
             return
         }
 
-        val memberName = group.getMember(userInfo.qq)?.nameCardOrNick
-        group.sendMessage("角色[$username]的 QQ 绑定为：$memberName - ${userInfo.qq}")
+        group.sendMessage(
+            PlainText("角色 $username [${if (userInfo.isOfficial) "正版" else "外置"}] 的 QQ 绑定为：")
+                .plus(At(userInfo.qq))
+        )
     }
 
     /**
@@ -130,6 +133,7 @@ object WhitelistListener : SimpleListenerHost() {
         // 生成 UUID
         val uuid = if (!userInfo.isOfficial) {
             UUID.nameUUIDFromBytes(("OfflinePlayer:${userInfo.username}").toByteArray(StandardCharsets.UTF_8))
+                .toString()
         } else {
             getMinecraftUUID(userInfo.username) ?: run {
                 group.sendMessage(At(sender.id) + "查询角色 UUID 失败，请输入正确的角色名。")
@@ -141,13 +145,13 @@ object WhitelistListener : SimpleListenerHost() {
         val roles = readServerWhitelist(instance)
 
         // 判断是否已经在白名单中
-        if (roles.any { it.name == userInfo.username }) {
+        if (roles.any { it.name == userInfo.username && it.uuid == uuid }) {
             group.sendMessage(At(sender.id) + "您已经在白名单中。")
             return
         }
 
         // 写入服务器白名单并刷新白名单
-        if (roles.add(Role(uuid.toString(), userInfo.username)) &&
+        if (roles.add(Role(uuid, userInfo.username)) &&
             writeServerWhitelist(instance, roles) && reloadWhitelist(instance)
         ) {
             group.sendMessage(At(sender.id) + "申请加入白名单成功！")
@@ -169,7 +173,9 @@ object WhitelistListener : SimpleListenerHost() {
         val instance = MCSMData.groupInstances[group.id]?.find { it.name == serverName } ?: return
 
         val roles = readServerWhitelist(instance)
-        group.sendMessage("[$serverName]白名单如下：\n\n" + roles.joinToString("\n") { it.name })
+        group.sendMessage("[$serverName]白名单如下：\n\n" + roles.joinToString("\n") {
+            "${it.name} - ${it.uuid.substring(0, 8)}"
+        })
     }
 
 
