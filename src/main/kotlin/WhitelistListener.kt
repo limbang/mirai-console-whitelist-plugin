@@ -55,7 +55,7 @@ object WhitelistListener : SimpleListenerHost() {
         }
 
         group.sendMessage(
-            PlainText("角色 $username [${if (userInfo.isOfficial) "正版" else "外置"}] 的 QQ 绑定为：")
+            PlainText("角色 $username [${if (userInfo.isOfficial) "正版" else "外置"}] 的 QQ 绑定为：${userInfo.qq},已为您@了。")
                 .plus(At(userInfo.qq))
         )
     }
@@ -157,6 +157,41 @@ object WhitelistListener : SimpleListenerHost() {
             group.sendMessage(At(sender.id) + "申请加入白名单成功！")
         } else {
             group.sendMessage(At(sender.id) + "加入白名单失败，请联系管理员。")
+        }
+    }
+
+    /**
+     * ### 处理群消息删除白名单消息
+     */
+    @EventHandler
+    suspend fun GroupMessageEvent.deleteWhitelist() {
+        if (toCommandSender().hasPermission(Whitelist.parentPermission).not()) return
+
+        val content = message.contentToString()
+        val match = """^删除白名单\s(.*)\s(.*)""".toRegex().find(content) ?: return
+
+        val (serverName, username) = match.destructured
+        // 判断 MCSM 插件里面有没有对应的服务器
+        val instance = MCSMData.groupInstances[group.id]?.find { it.name == serverName } ?: run {
+            group.sendMessage(At(sender.id) + "没有找到对应的服务器。")
+            return
+        }
+        // 读取服务器白名单
+        val roles = readServerWhitelist(instance)
+        // 过滤出指定角色
+        val filteredRoles = roles.filter { it.name == username }
+        // 判断是否已经在白名单中
+        if (filteredRoles.isEmpty()) {
+            group.sendMessage(At(sender.id) + "角色[$username]未在白名单中。")
+            return
+        }
+        // 删除指定角色
+        roles.removeAll(filteredRoles)
+        // 写入服务器白名单并刷新白名单
+        if (writeServerWhitelist(instance, roles) && reloadWhitelist(instance)) {
+            group.sendMessage(At(sender.id) + "删除[$username]成功！")
+        } else {
+            group.sendMessage(At(sender.id) + "删除[$username]失败，请联系管理员。")
         }
     }
 
