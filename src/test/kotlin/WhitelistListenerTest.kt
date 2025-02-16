@@ -1,4 +1,7 @@
+
 import top.limbang.whitelist.WhitelistListener
+import java.nio.charset.StandardCharsets
+import java.util.*
 import kotlin.test.Test
 
 /*
@@ -12,7 +15,12 @@ internal class WhitelistListenerTest {
 
     @Test
     fun getMinecraftUUID(){
-        val uuid = WhitelistListener.getMinecraftUUID("imbang7869444")
-        print(uuid == null)
+        val uuid = WhitelistListener.getMinecraftUUID("limbang")
+        println("在线玩家UUID：$uuid")
+
+        val uuid2 = UUID.nameUUIDFromBytes(("OfflinePlayer:limbang").toByteArray(StandardCharsets.UTF_8))
+            .toString()
+
+        println("离线玩家UUID：$uuid2")
     }
 }
