@@ -17,7 +17,7 @@ object Whitelist : KotlinPlugin (
     JvmPluginDescription(
         id = "top.limbang.whitelist",
         name = "Whitelist",
-        version = "0.0.2",
+        version = "0.0.4",
     ){
         author("Limbang")
         info("MC服务器白名单管理插件")

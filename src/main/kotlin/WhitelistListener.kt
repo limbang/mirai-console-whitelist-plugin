@@ -8,7 +8,7 @@
 package top.limbang.whitelist
 
 
-import kotlinx.serialization.decodeFromString
+import kotlinx.coroutines.delay
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.mamoe.mirai.console.command.CommandSender.Companion.toCommandSender
@@ -20,11 +20,11 @@ import net.mamoe.mirai.event.SimpleListenerHost
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.PlainText
-import top.limbang.mcsm.mirai.command.MCSMCompositeCommand.apiMap
-import top.limbang.mcsm.mirai.config.GroupInstance
-import top.limbang.mcsm.mirai.config.MCSMData
-import top.limbang.mcsm.model.GetFilesRequest
-import top.limbang.mcsm.model.UpdateFilesRequest
+import top.limbang.mcsm.command.MCSMCompositeCommand.apiMap
+import top.limbang.mcsm.config.GroupInstance
+import top.limbang.mcsm.config.MCSMData
+import top.limbang.mcsm.network.entity.request.GetFilesRequest
+import top.limbang.mcsm.network.entity.request.UpdateFilesRequest
 import top.limbang.whitelist.entity.MojangRole
 import top.limbang.whitelist.entity.Role
 import top.limbang.whitelist.entity.UserInfo
@@ -33,7 +33,7 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import java.nio.charset.StandardCharsets
-import java.util.UUID
+import java.util.*
 
 object WhitelistListener : SimpleListenerHost() {
 
@@ -150,13 +150,19 @@ object WhitelistListener : SimpleListenerHost() {
             return
         }
 
+        delay(1500)
+
         // 写入服务器白名单并刷新白名单
-        if (roles.add(Role(uuid, userInfo.username)) &&
-            writeServerWhitelist(instance, roles) && reloadWhitelist(instance)
-        ) {
-            group.sendMessage(At(sender.id) + "申请加入白名单成功！")
-        } else {
-            group.sendMessage(At(sender.id) + "加入白名单失败，请联系管理员。")
+        try {
+            if (roles.add(Role(uuid, userInfo.username)) &&
+                writeServerWhitelist(instance, roles) && reloadWhitelist(instance)
+            ) {
+                group.sendMessage(At(sender.id) + "申请加入白名单成功！")
+            } else {
+                group.sendMessage(At(sender.id) + "加入白名单失败，请联系管理员。")
+            }
+        }catch (e: Exception){
+            group.sendMessage(At(sender.id) + "加入白名单失败[${e.localizedMessage}]，请联系管理员。")
         }
     }
 

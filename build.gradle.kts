@@ -1,5 +1,5 @@
 plugins {
-    val kotlinVersion = "1.9.0"
+    val kotlinVersion = "2.0.0"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
 
@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "top.limbang"
-version = "0.0.2"
+version = "0.0.4"
 
 
 repositories {
@@ -16,10 +16,10 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
-    compileOnly(files("debug-sandbox/plugins/mirai-console-mcsm-plugin-1.1.6.mirai2.jar"))
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    compileOnly(files("debug-sandbox/plugins/mirai-console-mcsm-plugin-1.2.0.mirai2.jar"))
 
     testImplementation(kotlin("test"))
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.6.4")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-debug:1.10.0")
 }
